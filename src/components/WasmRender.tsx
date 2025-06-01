@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import * as wasm_js from '@/../pkg/image2ascii.js';
 import { useEffect, useState } from 'react';
 import AsciiDisplay from './AsciiDisplay';
@@ -26,7 +27,7 @@ interface AsciiArtData {
 }
 
 
-const WasmImage2AsciiComponent = ({ image_bytes, downsample_rate, edge_sobel_threshold, ascii_chars_edge_str, ascii_chars_gray_str }: WasmRenderProps) => {
+const AsciiComponent = ({ image_bytes, downsample_rate, edge_sobel_threshold, ascii_chars_edge_str, ascii_chars_gray_str }: WasmRenderProps) => {
     const [result, setResult] = useState<AsciiArtData | null>(null);
 
     useEffect(() => {
@@ -68,6 +69,8 @@ const WasmImage2AsciiComponent = ({ image_bytes, downsample_rate, edge_sobel_thr
     )
 }
 
+const WasmImage2AsciiComponent = dynamic(() => Promise.resolve(AsciiComponent), {
+    ssr: false
+});
 
-
-export default WasmImage2AsciiComponent
+export default WasmImage2AsciiComponent;
