@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react';
 import AsciiDisplay from './AsciiDisplay';
+import * as wasm_js from '@/../pkg/image2ascii.js';
 
 interface WasmRenderProps {
     image_bytes: Uint8Array
@@ -28,29 +29,16 @@ interface AsciiArtData {
 
 const AsciiComponent = ({ image_bytes, downsample_rate, edge_sobel_threshold, ascii_chars_edge_str, ascii_chars_gray_str }: WasmRenderProps) => {
     const [result, setResult] = useState<AsciiArtData | null>(null);
-    const [wasm, setWasm] = useState<any>(null);
-
-    useEffect(() => {
-        async function loadWasm() {
-            try {
-                const wasmModule = await import("@/../public/pkg/image2ascii");
-                setWasm(wasmModule);
-            } catch (err) {
-                console.error("Failed to load WASM:", err);
-            }
-        }
-        loadWasm();
-    }, []);
 
     useEffect(() => {
         if (downsample_rate <= 0 || downsample_rate == null) {
             return;
         }
-        if (!wasm) {
-            console.warn('WASM module not loaded yet');
-            return;
-        } else {
-            const result = wasm.render(
+        fetch("@/../pkg/image2ascii_bg.wasm").then(response => {
+            return response.arrayBuffer();
+        }).then(bytes => {
+            const _wasm_binary = wasm_js.initSync(bytes);
+            const result = wasm_js.render(
                 image_bytes,
                 downsample_rate,
                 edge_sobel_threshold,
@@ -59,7 +47,7 @@ const AsciiComponent = ({ image_bytes, downsample_rate, edge_sobel_threshold, as
             );
             setResult(result);
             console.log('WASM render result:', result);
-        }
+        })
     }, [image_bytes, downsample_rate, edge_sobel_threshold, ascii_chars_edge_str, ascii_chars_gray_str]);
 
     return (
