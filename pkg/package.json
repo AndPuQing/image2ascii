@@ -1,0 +1,15 @@
+{
+  "name": "image2ascii",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "image2ascii_bg.wasm",
+    "image2ascii.js",
+    "image2ascii.d.ts"
+  ],
+  "main": "image2ascii.js",
+  "types": "image2ascii.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
