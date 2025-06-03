@@ -37,6 +37,7 @@ const AsciiComponent = ({ image_bytes, downsample_rate, edge_sobel_threshold, as
         fetch("@/../pkg/image2ascii_bg.wasm").then(response => {
             return response.arrayBuffer();
         }).then(bytes => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const _wasm_binary = wasm_js.initSync(bytes);
             const result = wasm_js.render(
                 image_bytes,

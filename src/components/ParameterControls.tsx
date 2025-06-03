@@ -2,7 +2,7 @@
 import React from 'react';
 
 interface ParameterControlsProps {
-    params: { [key: string]: any };
+    params: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
     onParamChange: (paramName: string, value: string | number) => void;
 }
 
