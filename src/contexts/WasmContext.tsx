@@ -11,11 +11,7 @@ const WasmContext = createContext<WasmModule | null>(null);
 
 // Custom hook for easy access to the WASM module
 export const useWasm = () => {
-    const context = useContext(WasmContext);
-    if (!context) {
-        throw new Error('useWasm must be used within a WasmProvider');
-    }
-    return context;
+    return useContext(WasmContext);
 };
 
 // Provider component that loads the WASM module
@@ -43,11 +39,9 @@ export const WasmProvider = ({ children }: { children: ReactNode }) => {
         loadWasm();
     }, []); // Empty dependency array ensures this runs only once
 
-    if (!wasm) {
-        // You might want to render a loading indicator here
-        return <div>Loading WebAssembly Module...</div>;
-    }
-
+    // By rendering children immediately and passing a potentially null wasm object,
+    // we make the WASM loading feel seamless. Components using the wasm object
+    // will handle the null case, typically by showing their own loading/initial state.
     return (
         <WasmContext.Provider value={wasm}>
             {children}
