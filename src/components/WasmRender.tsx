@@ -54,7 +54,7 @@ const AsciiComponent = ({ image_bytes, downsample_rate, edge_sobel_threshold, as
     }, [wasm, image_bytes, downsample_rate, edge_sobel_threshold, ascii_chars_edge_str, ascii_chars_gray_str]);
 
     return (
-        <div>
+        <div className="w-full h-full flex items-center justify-center">
             <>
                 {result ? (<AsciiDisplay asciiArt={result} />) : (
                     <div className="text-center text-gray-500">

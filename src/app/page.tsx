@@ -13,6 +13,7 @@ export default function Home() {
         debouncedParams,
         handleParamChange,
         imageUint8Array,
+        downsampleRateRange,
     } = useAsciiConversion();
 
     return (
@@ -26,7 +27,7 @@ export default function Home() {
                 {/* Left Column: Controls */}
                 <div className="flex flex-col gap-8">
                     <ImageUpload onImageUpload={setImageFile} previewUrl={previewUrl} />
-                    <ParameterControls params={params} onParamChange={handleParamChange} />
+                    <ParameterControls params={params} onParamChange={handleParamChange} downsampleRateRange={downsampleRateRange} />
                 </div>
 
                 {/* Right Column: ASCII Art Display */}
