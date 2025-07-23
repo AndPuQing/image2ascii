@@ -371,6 +371,7 @@ dependencies = [
  "console_error_panic_hook",
  "image",
  "imageproc",
+ "rayon",
  "serde",
  "serde-wasm-bindgen",
  "wasm-bindgen",

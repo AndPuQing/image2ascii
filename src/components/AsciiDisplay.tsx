@@ -24,26 +24,45 @@ export default function AsciiDisplay({ asciiArt }: AsciiDisplayProps) {
         return null;
     }
 
-    return (
-        <div className="p-2 sm:p-4 rounded-lg shadow-inner overflow-x-auto">
-            <pre
-                className="text-[10px] sm:text-xs leading-none" // 
-            >
-                {asciiArt.lines.map((row, rowIndex) => (
-                    <React.Fragment key={rowIndex}>
-                        {row.map((charInfo, charIndex) => (
-                            <span
-                                key={charIndex}
-                                style={{ color: `rgb(${charInfo.r}, ${charInfo.g}, ${charInfo.b})` }}
-                            >
-                                {charInfo.char === ' ' ? '\u00A0' : charInfo.char}
-                            </span>
-                        ))}
+    const { lines, width, height } = asciiArt;
+    // A more robust estimation for monospace fonts (e.g., 10x16 or similar ratio)
+    const charWidth = 10;
+    const charHeight = 16; // A common height for a 10px-wide character
+    const viewBoxWidth = width * charWidth;
+    const viewBoxHeight = height * charHeight;
 
-                        {rowIndex < asciiArt.lines.length - 1 && '\n'}
-                    </React.Fragment>
-                ))}
-            </pre>
+    return (
+        <div className="w-full h-full overflow-hidden bg-gray-900 dark:bg-black rounded-md p-2 flex items-center justify-center">
+            <svg
+                viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+                preserveAspectRatio="xMidYMid meet"
+                style={{ width: '100%', height: '100%' }}
+            >
+                {/* Add a background to the SVG to ensure contrast */}
+                <rect width="100%" height="100%" fill="#1e1e1e" />
+                <text
+                    x="0"
+                    y="0"
+                    style={{
+                        fontFamily: 'monospace',
+                        fontSize: `${charHeight}px`,
+                        whiteSpace: 'pre',
+                    }}
+                >
+                    {lines.map((row, rowIndex) => (
+                        <tspan key={rowIndex} x="0" dy={`${charHeight}px`}>
+                            {row.map((charInfo, charIndex) => (
+                                <tspan
+                                    key={charIndex}
+                                    fill={`rgb(${charInfo.r}, ${charInfo.g}, ${charInfo.b})`}
+                                >
+                                    {charInfo.char}
+                                </tspan>
+                            ))}
+                        </tspan>
+                    ))}
+                </text>
+            </svg>
         </div>
     );
 }
