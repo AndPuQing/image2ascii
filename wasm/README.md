@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Image to ASCII Art Converter (WASM/CLI)
 
-## Getting Started
+This directory contains the core Rust logic for the image-to-ASCII-art conversion, which is compiled into both a WebAssembly (WASM) module for the web interface and a standalone command-line interface (CLI) tool.
 
-First, run the development server:
+## Features
+
+-   **Dual-Purpose:** Serves as the engine for both the web application and a native CLI.
+-   **High Performance:** Written in Rust and optimized for speed, with parallel processing via Rayon.
+-   **Edge Detection:** Uses a Sobel filter to detect edges and represent them with specific characters.
+-   **Color and Grayscale:** Preserves the original image's color and maps grayscale values to a character set.
+-   **Configurable:** Allows customization of downsampling rate, edge detection threshold, and ASCII character sets.
+
+## CLI Usage
+
+To use the command-line tool, you must have Rust and Cargo installed.
+
+### Building the CLI
+
+Build the optimized release version of the CLI:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cargo build --release --features=cli
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The executable will be located at `target/release/image2ascii-cli`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Running the CLI
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Execute the CLI with the path to your input image.
 
-## Learn More
+```bash
+./target/release/image2ascii-cli -i /path/to/your/image.jpg
+```
 
-To learn more about Next.js, take a look at the following resources:
+### CLI Options
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Flag                     | Argument              | Description                                                              | Default      |
+| ------------------------ | --------------------- | ------------------------------------------------------------------------ | ------------ |
+| `-i`, `--input`          | `<PATH>`              | Path to the input image file.                                            | (Required)   |
+| `-d`, `--downsample-rate`| `<RATE>`              | Downsample rate for the image. Higher values mean smaller output.        | `8`          |
+| `-e`, `--edge-sobel-threshold` | `<THRESHOLD>`         | Sobel edge detection threshold.                                          | `50`         |
+| `--ascii-chars-edge`     | `<CHARS>`             | ASCII characters for edges, from dark to light.                          | `" -/|\\"`   |
+| `--ascii-chars-gray`     | `<CHARS>`             | ASCII characters for grayscale, from dark to light.                      | `"@?OPoc:. "` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Benchmarking
 
-## Deploy on Vercel
+The project includes a benchmark suite using `criterion` to measure the performance of the core image processing functions.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To run the benchmarks:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+cargo bench
+```
+
+The results, including an HTML report, will be saved in the `target/criterion` directory.
