@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 use colored::*;
-use image2ascii::{image_to_ascii_art, AsciiArtOutput};
+use pixel2char::{image_to_ascii_art, AsciiArtOutput};
 use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;

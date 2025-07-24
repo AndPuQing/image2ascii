@@ -22,14 +22,14 @@ Build the optimized release version of the CLI:
 cargo build --release --features=cli
 ```
 
-The executable will be located at `target/release/image2ascii-cli`.
+The executable will be located at `target/release/pixel2char-cli`.
 
 ### Running the CLI
 
 Execute the CLI with the path to your input image.
 
 ```bash
-./target/release/image2ascii-cli -i /path/to/your/image.jpg
+./target/release/pixel2char-cli -i /path/to/your/image.jpg
 ```
 
 ### CLI Options

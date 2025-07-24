@@ -1,19 +1,21 @@
 [package]
-name = "img2ascii"
+name = "pixel2char"
 version = "0.1.0"
 edition = "2024"
 description = "A tool to convert images to ASCII art, available as a library, WASM module, and CLI."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/AndPuQing/image2ascii"
+repository = "https://github.com/AndPuQing/pixel2char"
 readme = "README.md"
 keywords = ["image", "ascii", "cli", "wasm"]
 categories = ["command-line-utilities", "multimedia::images", "wasm"]
 
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "image2ascii-cli"
+name = "pixel2char-cli"
 path = "src/main.rs"
 required-features = ["cli"]
 

@@ -1,15 +1,27 @@
 {
-  "name": "image2ascii",
+  "name": "pixel2char",
   "type": "module",
+  "description": "A tool to convert images to ASCII art, available as a library, WASM module, and CLI.",
   "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AndPuQing/pixel2char"
+  },
   "files": [
-    "image2ascii_bg.wasm",
-    "image2ascii.js",
-    "image2ascii.d.ts"
+    "pixel2char_bg.wasm",
+    "pixel2char.js",
+    "pixel2char.d.ts"
   ],
-  "main": "image2ascii.js",
-  "types": "image2ascii.d.ts",
+  "main": "pixel2char.js",
+  "types": "pixel2char.d.ts",
   "sideEffects": [
     "./snippets/*"
+  ],
+  "keywords": [
+    "image",
+    "ascii",
+    "cli",
+    "wasm"
   ]
 }

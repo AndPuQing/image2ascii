@@ -1,5 +1,5 @@
 {
-    "name": "image2ascii",
+    "name": "pixel2char",
     "version": "0.1.0",
     "private": true,
     "scripts": {

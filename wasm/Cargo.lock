@@ -579,24 +579,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "img2ascii"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "colored",
- "console_error_panic_hook",
- "criterion",
- "image",
- "imageproc",
- "rayon",
- "serde",
- "serde-wasm-bindgen",
- "wasm-bindgen",
- "wasm-bindgen-test",
-]
-
-[[package]]
 name = "imgref"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -945,6 +927,24 @@ name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
+
+[[package]]
+name = "pixel2char"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "colored",
+ "console_error_panic_hook",
+ "criterion",
+ "image",
+ "imageproc",
+ "rayon",
+ "serde",
+ "serde-wasm-bindgen",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+]
 
 [[package]]
 name = "pkg-config"

@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion, black_box};
-use image2ascii::image_to_ascii_art;
+use pixel2char::image_to_ascii_art;
 use image::ImageReader;
 
 fn load_test_image() -> image::DynamicImage {
