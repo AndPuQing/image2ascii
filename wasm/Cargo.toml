@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "A tool to convert images to ASCII art, available as a library, WASM module, and CLI."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/your-username/image2ascii"
+repository = "https://github.com/AndPuQing/image2ascii"
 readme = "README.md"
 keywords = ["image", "ascii", "cli", "wasm"]
 categories = ["command-line-utilities", "multimedia::images", "wasm"]
@@ -50,11 +50,7 @@ cli = ["clap", "anyhow", "colored"]
 
 
 [profile.release]
-# Enable full link-time optimization for maximum performance.
 lto = true
-# Set the optimization level to 3 (highest).
 opt-level = 3
-# Enable code generation units for parallel compilation.
 codegen-units = 1
-# Strip symbols for a smaller binary size.
 strip = true
