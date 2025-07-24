@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView, GrayImage, Luma, Pixel, Rgb, imageops};
+use image::{DynamicImage, GenericImageView, GrayImage, Pixel, Rgb, imageops};
 use imageproc::gradients;
 use serde::{Deserialize, Serialize};
 use std::f32::consts::PI;
@@ -9,21 +9,22 @@ use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct AsciiCharInfo {
-    char: char,
-    r: u8,
-    g: u8,
-    b: u8,
+    pub char: char,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct AsciiArtOutput {
-    lines: Vec<Vec<AsciiCharInfo>>,
-    width: u32,
-    height: u32,
+    pub lines: Vec<Vec<AsciiCharInfo>>,
+    pub width: u32,
+    pub height: u32,
 }
 
 // --- Public WASM-bindgen Functions ---
 
+#[cfg(feature = "wasm")]
 #[wasm_bindgen]
 pub fn set_panic_hook() {
     // Set a panic hook for better error messages in the browser console.
@@ -31,6 +32,7 @@ pub fn set_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
+#[cfg(feature = "wasm")]
 #[wasm_bindgen]
 pub fn render(
     image_bytes: &[u8],
@@ -75,7 +77,7 @@ pub fn render(
 // --- Core Logic ---
 
 /// Converts an image to ASCII art. This is the main processing function.
-fn image_to_ascii_art(
+pub fn image_to_ascii_art(
     img: &DynamicImage,
     downsample_rate: u32,
     edge_sobel_threshold: u32,
@@ -136,6 +138,8 @@ fn image_to_ascii_art(
 // --- Helper Functions for Image Processing ---
 
 /// Creates a map of edges from the image using Sobel operator.
+/// This optimized version combines gradient calculation, pooling, and quantization
+/// into a single loop to reduce memory allocations and improve performance.
 fn create_edge_map(
     img: &DynamicImage,
     edge_sobel_threshold: u32,
@@ -147,40 +151,68 @@ fn create_edge_map(
     let (orig_width, orig_height) = img.dimensions();
     let gray_img_base = img.to_luma8();
 
-    // Calculate Sobel gradients
+    // Calculate Sobel gradients once. This is memory-intensive but might be faster
+    // than re-calculating inside the loop, as the imageproc crate is likely optimized.
     let sobel_h = gradients::horizontal_sobel(&gray_img_base);
     let sobel_v = gradients::vertical_sobel(&gray_img_base);
 
-    // Create a map of normalized gradient angles
-    let mut theta_normalized_map = GrayImage::new(orig_width, orig_height);
-    theta_normalized_map
-        .as_mut()
-        .par_chunks_mut(orig_width as usize)
-        .enumerate()
-        .for_each(|(y, row)| {
-            for (x, pixel) in row.iter_mut().enumerate() {
-                let sx = sobel_h.get_pixel(x as u32, y as u32)[0] as f32;
-                let sy = sobel_v.get_pixel(x as u32, y as u32)[0] as f32;
-                let magnitude = (sx * sx + sy * sy).sqrt();
-                let mut normalized_angle_val = 0.0f32;
+    let mut final_edge_map = GrayImage::new(output_grid_width, output_grid_height);
+    let edge_sobel_threshold_f32 = edge_sobel_threshold as f32;
 
-                if magnitude >= edge_sobel_threshold as f32 {
-                    let angle_rad = sy.atan2(sx); // Range: -PI to PI
-                    normalized_angle_val = (angle_rad / PI) * 0.5 + 0.5; // Normalize to 0.0 - 1.0
+    // Aspect ratio correction for character cells (usually taller than wide)
+    let y_downsample_rate = downsample_rate * 2;
+
+    // Pre-calculate quantization step
+    let quant_step = if num_edge_levels > 0 {
+        (256.0f32 / num_edge_levels as f32).max(1.0f32) as u8
+    } else {
+        0
+    };
+
+    final_edge_map
+        .par_chunks_mut(output_grid_width as usize)
+        .enumerate()
+        .for_each(|(y_out, row)| {
+            for (x_out, pixel) in row.iter_mut().enumerate() {
+                let x_start = (x_out as u32) * downsample_rate;
+                let y_start = (y_out as u32) * y_downsample_rate;
+                let x_end = (x_start + downsample_rate).min(orig_width);
+                let y_end = (y_start + y_downsample_rate).min(orig_height);
+
+                let mut max_magnitude = 0.0f32;
+                let mut angle_at_max_magnitude = 0.0f32;
+
+                // Max pooling for gradient magnitude within the target window
+                for y in y_start..y_end {
+                    for x in x_start..x_end {
+                        let sx = sobel_h.get_pixel(x, y)[0] as f32;
+                        let sy = sobel_v.get_pixel(x, y)[0] as f32;
+                        let magnitude = (sx * sx + sy * sy).sqrt();
+                        if magnitude > max_magnitude {
+                            max_magnitude = magnitude;
+                            angle_at_max_magnitude = sy.atan2(sx);
+                        }
+                    }
                 }
-                *pixel = (normalized_angle_val * 255.0) as u8;
+
+                let mut final_pixel_value = 0;
+                if max_magnitude >= edge_sobel_threshold_f32 {
+                    // Normalize angle to 0.0 - 1.0
+                    let normalized_angle = (angle_at_max_magnitude / PI) * 0.5 + 0.5;
+                    let angle_val_u8 = (normalized_angle * 255.0) as u8;
+
+                    // Quantize the value, similar to the original `quantize_gray_image`
+                    if quant_step > 0 {
+                        final_pixel_value = (angle_val_u8 / quant_step) * quant_step;
+                    } else {
+                        final_pixel_value = angle_val_u8;
+                    }
+                }
+                *pixel = final_pixel_value;
             }
         });
 
-    // Quantize, pool, and resize the edge map
-    let theta_quantized_fullsize = quantize_gray_image(&theta_normalized_map, num_edge_levels);
-    let pooled_theta_map = max_pooling_gray_image(&theta_quantized_fullsize, downsample_rate);
-    imageops::resize(
-        &pooled_theta_map,
-        output_grid_width,
-        output_grid_height,
-        imageops::FilterType::Nearest,
-    )
+    final_edge_map
 }
 
 /// Prepares a resized and quantized grayscale version of the image.
@@ -277,37 +309,6 @@ fn quantize_gray_image(image: &GrayImage, num_levels: u32) -> GrayImage {
     quantized_img
 }
 
-/// Downsamples a grayscale image using max pooling.
-fn max_pooling_gray_image(image: &GrayImage, pool_size: u32) -> GrayImage {
-    if pool_size <= 1 { return image.clone(); }
-
-    let (width, height) = image.dimensions();
-    let pooled_width = (width / pool_size).max(1);
-    let pooled_height = (height / pool_size).max(1);
-    let mut pooled_image = GrayImage::new(pooled_width, pooled_height);
-
-    pooled_image
-        .par_chunks_mut(pooled_width as usize)
-        .enumerate()
-        .for_each(|(y_out, row)| {
-            for (x_out, pixel) in row.iter_mut().enumerate() {
-                let x_start = (x_out as u32) * pool_size;
-                let y_start = (y_out as u32) * pool_size;
-                let mut max_val = 0u8;
-                for r_pool in 0..pool_size {
-                    for c_pool in 0..pool_size {
-                        let current_x = x_start + c_pool;
-                        let current_y = y_start + r_pool;
-                        if current_x < width && current_y < height {
-                            max_val = max_val.max(image.get_pixel(current_x, current_y)[0]);
-                        }
-                    }
-                }
-                *pixel = max_val;
-            }
-        });
-    pooled_image
-}
 
 // --- Tests ---
 
