@@ -1,5 +1,5 @@
 [package]
-name = "image2ascii"
+name = "img2ascii"
 version = "0.1.0"
 edition = "2024"
 description = "A tool to convert images to ASCII art, available as a library, WASM module, and CLI."
